@@ -6,6 +6,13 @@ $(document).ready( function() {
 		var tags = $(this).find("input[name='tags']").val();
 		getUnanswered(tags);
 	});
+	$('.inspiration-getter').submit( function(event){
+		// zero out results if previous search has run
+		$('.results').html('');
+		// get the value of the tags the user submitted
+		var tags = $(this).find("input[name='answers']").val();
+		getanswered(tags);
+	});
 });
 
 // this function takes the question object returned by StackOverflow 
@@ -40,7 +47,25 @@ var showQuestion = function(question) {
 
 	return result;
 };
+// this function takes the answer object returned by StackOverflow 
+// and creates new result to be appended to DOM
+var showAnswer = function(answer) {
+	
+	// clone our result template code
+	var result = $('.atemplates .answer').clone();
+	
+	
+	// set some properties related to asker
+	var answerer = result.find('.answerer');
+	answerer.html('<p>Name: <a target="_blank" href=http://stackoverflow.com/users/' + answer.user.user_id + ' >' +
+													answer.user.display_name +
+												'</a>' +
+							'</p>' +
+ 							'<p>Reputation: ' + answer.user.reputation + '</p>'
+	);
 
+	return result;
+};
 
 // this function takes the results object from StackOverflow
 // and creates info about search results to be appended to DOM
@@ -87,6 +112,37 @@ var getUnanswered = function(tags) {
 		$('.search-results').append(errorElem);
 	});
 };
+// takes a string of semi-colon separated tags to be searched
+// for on StackOverflow
+var getanswered = function(tags) {
+	
+	// the parameters we need to pass in our request to StackOverflow's API
+	var request = {
+								site: 'stackoverflow'
+								};
+	
+	//http://api.stackexchange.com/2.2/tags/java/top-answerers/all_time?site=stackoverflow
+	
+	var result = $.ajax({
+		url: "http://api.stackexchange.com/2.2/tags/"+tags+"/top-answerers/all_time",
+		data: request,
+		dataType: "jsonp",
+		type: "GET",
+		})
+	.done(function(result){
+		var searchResults = showSearchResults(tags, result.items.length);
 
+		$('.search-results').html(searchResults);
+
+		$.each(result.items, function(i, item) {
+			var answer = showAnswer(item);
+			$('.results').append(answer);
+		});
+	})
+	.fail(function(jqXHR, error, errorThrown){
+		var errorElem = showError(error);
+		$('.search-results').append(errorElem);
+	});
+};
 
 
