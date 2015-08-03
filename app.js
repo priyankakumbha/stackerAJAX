@@ -1,4 +1,5 @@
 $(document).ready( function() {
+
 	$('.unanswered-getter').submit( function(event){
 		// zero out results if previous search has run
 		$('.results').html('');
@@ -10,8 +11,9 @@ $(document).ready( function() {
 		// zero out results if previous search has run
 		$('.results').html('');
 		// get the value of the tags the user submitted
-		var tags = $(this).find("input[name='answers']").val();
-		getanswered(tags);
+		var topic = $(this).find("input[name='answerers']").val();
+		getanswered(topic);
+		
 	});
 });
 
@@ -114,23 +116,24 @@ var getUnanswered = function(tags) {
 };
 // takes a string of semi-colon separated tags to be searched
 // for on StackOverflow
-var getanswered = function(tags) {
+var getanswered = function(topic) {
 	
 	// the parameters we need to pass in our request to StackOverflow's API
-	var request = {
+	var request = {tag: topic,
 								site: 'stackoverflow'
 								};
-	
-	//http://api.stackexchange.com/2.2/tags/java/top-answerers/all_time?site=stackoverflow
+
+
+		//http://api.stackexchange.com/2.2/tags/java/top-answerers/all_time?site=stackoverflow
 	
 	var result = $.ajax({
-		url: "http://api.stackexchange.com/2.2/tags/"+tags+"/top-answerers/all_time",
+		url: "http://api.stackexchange.com/2.2/tags/"+topic+"/top-answerers/all_time",
 		data: request,
 		dataType: "jsonp",
 		type: "GET",
 		})
 	.done(function(result){
-		var searchResults = showSearchResults(tags, result.items.length);
+		var searchResults = showSearchResults(request.tag, result.items.length);
 
 		$('.search-results').html(searchResults);
 
